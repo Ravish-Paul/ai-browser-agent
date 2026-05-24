@@ -1,0 +1,21 @@
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables (Credentials)
+.env
+
+# Screenshots and logs
+step_*.png
+screenshot.png
+streamlit_step_*.png
+*.png
+*.log
+brain_debug.log
