@@ -66,6 +66,12 @@ Next Action(s):`;
     "Authorization": `Bearer ${apiKey}`
   };
 
+  // Auto-detect Groq API Key and route directly to Groq's official API endpoint
+  let apiEndpoint = "https://openrouter.ai/api/v1/chat/completions";
+  if (apiKey && apiKey.startsWith("gsk_")) {
+    apiEndpoint = "https://api.groq.com/openai/v1/chat/completions";
+  }
+
   const body = {
     model: model || "groq/compound",
     messages: [
@@ -77,8 +83,8 @@ Next Action(s):`;
     temperature: 0.1
   };
 
-  // Only pass reasoning configuration for models that explicitly support it
-  if (body.model.includes('reasoning') || body.model.includes('nemotron')) {
+  // Only pass reasoning configuration for OpenRouter models that explicitly support it
+  if (!apiKey.startsWith("gsk_") && (body.model.includes('reasoning') || body.model.includes('nemotron'))) {
     body.extra_body = {
       reasoning: {
         enabled: true
@@ -86,7 +92,7 @@ Next Action(s):`;
     };
   }
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const response = await fetch(apiEndpoint, {
     method: "POST",
     headers,
     body: JSON.stringify(body)
