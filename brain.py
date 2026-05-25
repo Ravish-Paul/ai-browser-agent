@@ -91,21 +91,22 @@ Rules:
 5. You MUST ONLY use selectors listed in the 'Interactive Elements on Current Page' section. Do NOT invent or guess selectors.
 6. If the goal involves searching, playing a song, or watching a video:
    a. Locate the search input field and use type_text on it directly, then press_key("Enter"). Do NOT click random buttons first.
-    b. Once the search results page loads, locate the video title or thumbnail (often using a selector like a:has-text("Song Name") or #thumbnail) and click_element on it to play/open it.
+   b. Once the search results page loads, locate the video title or thumbnail (often using a selector like a:has-text("Song Name") or #thumbnail) and click_element on it to play/open it.
 7. If your previous action failed, do NOT repeat the exact same action or selector. Try a different selector, scroll, or change your approach.
 8. Do NOT click "Sign in", "Log in", or "Create account" buttons unless the goal explicitly specifies that you must log in. Public content (like search, Wikipedia, YouTube) does NOT require signing in.
+9. DO NOT BLINDLY COPY EXAMPLE VALUES. You MUST substitute search terms (like "Song Name" or "Topic Name") with the actual search keywords and matching link text corresponding to the user's specific "Ultimate Goal".
 
 Examples of searching:
 open_website("https://www.wikipedia.org")
-type_text("input[name='search']", "Python programming language")
+type_text("input[name='search']", "Topic Name")
 press_key("Enter")
 
 Examples of playing a video:
 open_website("https://www.youtube.com")
-type_text("input[name='search_query']", "tere bina zindagi se koi")
+type_text("input[name='search_query']", "Song Name")
 press_key("Enter")
-# On results page:
-click_element("a:has-text(\"Tere Bina Zindagi Se Koi\")")
+# On results page (select actual matching link from current page selectors list):
+click_element("a:has-text(\"Song Name\")")
 
 Examples of finishing:
 finish("The first sentence is: Python is a high-level, general-purpose programming language.")
