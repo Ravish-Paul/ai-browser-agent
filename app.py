@@ -109,6 +109,11 @@ if start_button:
         def append_log(text):
             logs.append(text)
             log_container.markdown(f'<div class="log-box">{"".join(logs)}</div>', unsafe_allow_html=True)
+            try:
+                with open("streamlit_run.log", "a", encoding="utf-8") as f:
+                    f.write(text)
+            except:
+                pass
 
         append_log("Initializing browser and AI brain...\n")
         status_text.info("Starting browser...")
