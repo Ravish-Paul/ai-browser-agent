@@ -12,6 +12,11 @@ export default function SidePanelApp() {
   const [history, setHistory] = useState([]);
   const [showSettings, setShowSettings] = useState(true);
 
+  // Live screenshot states
+  const [showLiveScreen, setShowLiveScreen] = useState(false);
+  const [liveScreenshot, setLiveScreenshot] = useState(null);
+  const [screenSize, setScreenSize] = useState('medium'); // small, medium, large
+
   const terminalRef = useRef(null);
 
   // 1. Load initial configs from chrome storage
@@ -32,6 +37,9 @@ export default function SidePanelApp() {
           setCurrentStep(state.currentStep);
           setHistory(state.history);
           setLogs(state.logs);
+          if (state.lastScreenshot) {
+            setLiveScreenshot(state.lastScreenshot);
+          }
           if (state.running) {
             setShowSettings(false); // Hide settings during active run
           }
@@ -39,7 +47,7 @@ export default function SidePanelApp() {
       });
     }
 
-    // 2. Listen to real-time logs from background script
+    // 2. Listen to real-time logs and live screens from background script
     const messageListener = (message) => {
       if (message.type === 'LOG_UPDATE') {
         const { state, log } = message;
@@ -47,6 +55,13 @@ export default function SidePanelApp() {
         setCurrentStep(state.currentStep);
         setHistory(state.history);
         setRunning(state.running);
+        if (state.lastScreenshot) {
+          setLiveScreenshot(state.lastScreenshot);
+        }
+      }
+      
+      if (message.type === 'LIVE_SCREEN_UPDATE') {
+        setLiveScreenshot(message.dataUrl);
       }
       
       if (message.type === 'AGENT_FINISHED') {
@@ -69,6 +84,15 @@ export default function SidePanelApp() {
       }
     };
   }, []);
+
+  // Sync live screen stream state with background script
+  useEffect(() => {
+    if (showLiveScreen && typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({ type: 'START_LIVE_STREAM' });
+    } else if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({ type: 'STOP_LIVE_STREAM' });
+    }
+  }, [showLiveScreen]);
 
   // 3. Auto scroll terminal to bottom on logs update
   useEffect(() => {
@@ -119,8 +143,47 @@ export default function SidePanelApp() {
     }
   };
 
+  const renderColoredLog = (log, index) => {
+    let color = 'var(--text-primary)';
+    let fontWeight = 'normal';
+    
+    if (log.includes('[SYSTEM]')) {
+      color = '#61afef'; // Cyan/Blue
+      fontWeight = '500';
+    } else if (log.includes('--- Step')) {
+      color = '#ec4899'; // Hot pink accent
+      fontWeight = '600';
+    } else if (log.includes('AI Plan:') || log.includes('AI is thinking...')) {
+      color = '#c678dd'; // Purple
+    } else if (log.includes('Success:')) {
+      color = '#4ec9b0'; // Teal/Green
+    } else if (log.includes('Execution Error:') || log.includes('Error:')) {
+      color = '#f44747'; // Red
+      fontWeight = '500';
+    } else if (log.includes('Goal Finished:') || log.includes('Goal Completed!')) {
+      color = '#e5c07b'; // Gold
+      fontWeight = '600';
+    }
+    
+    return (
+      <div key={index} style={{ color, fontWeight, marginBottom: '6px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+        {log}
+      </div>
+    );
+  };
+
+  const getViewportHeight = () => {
+    switch (screenSize) {
+      case 'small': return '120px';
+      case 'large': return '280px';
+      case 'medium':
+      default:
+        return '180px';
+    }
+  };
+
   return (
-    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', height: '100vh', gap: '16px' }}>
+    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', height: '100vh', gap: '16px', overflowY: 'auto' }}>
       
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -189,7 +252,7 @@ export default function SidePanelApp() {
               <input
                 type="range"
                 min="1"
-                max="15"
+                max="25"
                 value={maxSteps}
                 onChange={(e) => setMaxSteps(Number(e.target.value))}
                 style={{ width: '100px', accentColor: 'var(--accent-primary)' }}
@@ -229,6 +292,92 @@ export default function SidePanelApp() {
         </div>
       </div>
 
+      {/* Live Viewport Preview Panel */}
+      <div className="glass-card" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            📺 Live Browser Viewport
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {showLiveScreen && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {['small', 'medium', 'large'].map((sz) => (
+                  <button
+                    key={sz}
+                    onClick={() => setScreenSize(sz)}
+                    className="btn-secondary"
+                    style={{
+                      padding: '2px 6px',
+                      fontSize: '9px',
+                      height: '20px',
+                      borderRadius: '3px',
+                      background: screenSize === sz ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.05)',
+                      borderColor: screenSize === sz ? 'var(--accent-primary)' : 'var(--border-glass)',
+                      color: screenSize === sz ? '#fff' : 'var(--text-secondary)'
+                    }}
+                  >
+                    {sz[0].toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button 
+              className={`btn-secondary ${showLiveScreen ? 'active' : ''}`}
+              onClick={() => setShowLiveScreen(!showLiveScreen)}
+              style={{
+                padding: '3px 10px',
+                fontSize: '11px',
+                height: '24px',
+                borderRadius: '4px',
+                backgroundColor: showLiveScreen ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                borderColor: showLiveScreen ? 'var(--accent-primary)' : 'var(--border-glass)'
+              }}
+            >
+              {showLiveScreen ? 'Disable' : 'Enable'}
+            </button>
+          </div>
+        </div>
+
+        {showLiveScreen ? (
+          <div 
+            style={{ 
+              width: '100%', 
+              height: getViewportHeight(), 
+              backgroundColor: '#040508', 
+              borderRadius: '8px', 
+              border: '1px solid var(--border-glass)',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}
+          >
+            {liveScreenshot ? (
+              <img 
+                src={liveScreenshot} 
+                alt="Live Viewport" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'contain',
+                  transition: 'opacity 0.15s ease'
+                }} 
+              />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '12px' }}>
+                <span className="status-indicator active"></span>
+                <span>Awaiting live screen stream...</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', margin: '2px 0' }}>
+            Live preview is disabled. Enable it to mirror the current browser tab at 12 FPS.
+          </p>
+        )}
+      </div>
+
       {/* Execution Tracker */}
       {running && (
         <div className="glass-card" style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
@@ -238,21 +387,19 @@ export default function SidePanelApp() {
       )}
 
       {/* Terminal logs */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '150px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '150px', paddingBottom: '16px' }}>
         <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.05em', marginBottom: '8px' }}>
           📜 Execution Console Logs
         </h3>
         <div 
           ref={terminalRef} 
           className="terminal-box" 
-          style={{ flex: 1, minHeight: '100px' }}
+          style={{ flex: 1, minHeight: '120px' }}
         >
           {logs.length === 0 ? (
             <span style={{ color: 'var(--text-muted)' }}>Console idle. Awaiting agent run...</span>
           ) : (
-            logs.map((log, i) => (
-              <div key={i} style={{ marginBottom: '4px', wordBreak: 'break-all' }}>{log}</div>
-            ))
+            logs.map((log, i) => renderColoredLog(log, i))
           )}
         </div>
       </div>

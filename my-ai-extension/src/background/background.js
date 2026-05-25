@@ -10,8 +10,58 @@ let agentState = {
   currentStep: 0,
   history: [],
   logs: [],
-  errorMsg: null
+  errorMsg: null,
+  lastScreenshot: null
 };
+
+// Helper to capture the current active tab's visible area
+function captureActiveTab() {
+  return new Promise((resolve) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab) {
+        resolve(null);
+        return;
+      }
+      chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 40 }, (dataUrl) => {
+        if (chrome.runtime.lastError) {
+          resolve(null);
+        } else {
+          resolve(dataUrl);
+        }
+      });
+    });
+  });
+}
+
+let liveStreamInterval = null;
+
+function startLiveStream() {
+  if (liveStreamInterval) return;
+  liveStreamInterval = setInterval(async () => {
+    try {
+      const dataUrl = await captureActiveTab();
+      if (dataUrl) {
+        chrome.runtime.sendMessage({
+          type: 'LIVE_SCREEN_UPDATE',
+          dataUrl: dataUrl
+        }).catch(() => {
+          stopLiveStream(); // Stop stream if sidepanel/popup is closed
+        });
+      }
+    } catch (e) {
+      stopLiveStream();
+    }
+  }, 90); // ~11-12 FPS
+}
+
+function stopLiveStream() {
+  if (liveStreamInterval) {
+    clearInterval(liveStreamInterval);
+    liveStreamInterval = null;
+  }
+}
+
 
 // Log helper to store and broadcast agent status
 function logToUI(text) {
@@ -134,6 +184,14 @@ async function runAgentLoop() {
     // 3. AI Thought Step
     logToUI("AI is thinking...");
     let plannedCode = "";
+    let screenshotUrl = null;
+    try {
+      screenshotUrl = await captureActiveTab();
+      agentState.lastScreenshot = screenshotUrl;
+    } catch (e) {
+      console.warn("Screenshot failed during step:", e);
+    }
+
     try {
       plannedCode = await getLLMPlan({
         apiKey: agentState.apiKey,
@@ -142,7 +200,8 @@ async function runAgentLoop() {
         history: agentState.history,
         currentUrl,
         pageTitle,
-        elements
+        elements,
+        screenshotUrl
       });
       logToUI(`AI Plan:\n${plannedCode}`);
     } catch (err) {
@@ -233,6 +292,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       agentState.history = [];
       agentState.logs = [];
       agentState.errorMsg = null;
+      agentState.lastScreenshot = null;
       
       runAgentLoop();
     }
@@ -242,10 +302,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'STOP_AGENT') {
     agentState.running = false;
     logToUI("Stop requested by user.");
+    stopLiveStream();
     sendResponse({ success: true, state: agentState });
   }
 
   if (message.type === 'GET_AGENT_STATUS') {
     sendResponse({ state: agentState });
+  }
+
+  if (message.type === 'START_LIVE_STREAM') {
+    startLiveStream();
+    sendResponse({ success: true });
+  }
+
+  if (message.type === 'STOP_LIVE_STREAM') {
+    stopLiveStream();
+    sendResponse({ success: true });
   }
 });

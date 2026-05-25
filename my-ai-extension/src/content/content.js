@@ -51,3 +51,40 @@ async function executeSingleAction(action) {
       throw new Error(`Unsupported page action: ${action.type}`);
   }
 }
+
+// Auto Skip YouTube Ads and Dismiss Overlay Banners
+setInterval(() => {
+  const skipButtons = [
+    '.ytp-ad-skip-button',
+    '.ytp-ad-skip-button-modern',
+    '.ytp-skip-ad-button',
+    '.ytp-ad-skip-button-text',
+    '.ytp-ad-preview-container'
+  ];
+  for (const selector of skipButtons) {
+    const btn = document.querySelector(selector);
+    if (btn) {
+      try {
+        btn.click();
+        console.log('[AI Extension] Skipped YouTube Video Ad!');
+      } catch (e) {}
+    }
+  }
+
+  // Handle overlay close buttons (like text/banner ads at the bottom of the video)
+  const closeOverlayButtons = [
+    '.ytp-ad-overlay-close-container',
+    '.ytp-ad-overlay-close-button',
+    '.ytp-ad-image-overlay .ytp-ad-overlay-close-button-a'
+  ];
+  for (const selector of closeOverlayButtons) {
+    const btn = document.querySelector(selector);
+    if (btn) {
+      try {
+        btn.click();
+        console.log('[AI Extension] Dismissed YouTube Overlay Ad Banner!');
+      } catch (e) {}
+    }
+  }
+}, 500);
+
