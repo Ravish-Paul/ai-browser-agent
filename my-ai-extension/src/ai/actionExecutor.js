@@ -35,8 +35,8 @@ export function queryAllIncludingShadows(tag, root = document) {
 export function resolveSelector(selector, root = document) {
   if (!selector) return null;
 
-  // Custom text-based matcher
-  const hasTextMatch = selector.match(/^([a-zA-Z0-9\-]+):has-text\("(.+)"\)$/);
+  // Custom text-based matcher (supports double and single quotes)
+  const hasTextMatch = selector.match(/^([a-zA-Z0-9\-]+):has-text\(['"](.+)['"]\)$/);
   if (hasTextMatch) {
     const tag = hasTextMatch[1];
     const text = hasTextMatch[2];

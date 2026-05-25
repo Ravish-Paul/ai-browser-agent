@@ -78,58 +78,127 @@ function logToUI(text) {
 
 // Action statement parser
 function parseActions(codeBlock) {
-  const lines = codeBlock.split('\n');
   const actions = [];
+  
+  // Clean comments on each line
+  const lines = codeBlock.split('\n').map(line => {
+    const idx = line.indexOf('#');
+    return idx >= 0 ? line.substring(0, idx) : line;
+  });
+  
+  const content = lines.join(' ').trim();
+  if (!content) return actions;
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
+  let pos = 0;
+  
+  function skipWhitespace() {
+    while (pos < content.length && /\s/.test(content[pos])) {
+      pos++;
+    }
+  }
 
-    // open_website
-    let match = trimmed.match(/^open_website\(['"](.+)['"]\)$/);
-    if (match) {
-      actions.push({ type: 'open_website', url: match[1] });
+  function readString(quoteChar) {
+    let str = "";
+    pos++; // Skip opening quote
+    while (pos < content.length) {
+      const char = content[pos];
+      if (char === '\\') {
+        if (pos + 1 < content.length) {
+          str += content[pos + 1];
+          pos += 2;
+        } else {
+          str += char;
+          pos++;
+        }
+      } else if (char === quoteChar) {
+        pos++; // Skip closing quote
+        return str;
+      } else {
+        str += char;
+        pos++;
+      }
+    }
+    return str;
+  }
+
+  function readArguments() {
+    const args = [];
+    if (content[pos] !== '(') return args;
+    pos++; // Skip '('
+    
+    skipWhitespace();
+    if (content[pos] === ')') {
+      pos++; // Skip ')'
+      return args;
+    }
+
+    while (pos < content.length) {
+      skipWhitespace();
+      const char = content[pos];
+      if (char === '"' || char === "'") {
+        args.push(readString(char));
+      } else {
+        let val = "";
+        while (pos < content.length && content[pos] !== ',' && content[pos] !== ')' && content[pos] !== ' ') {
+          val += content[pos];
+          pos++;
+        }
+        val = val.trim();
+        if (!isNaN(val) && val !== '') {
+          args.push(Number(val));
+        } else {
+          args.push(val);
+        }
+      }
+
+      skipWhitespace();
+      if (content[pos] === ',') {
+        pos++; // Skip comma
+      } else if (content[pos] === ')') {
+        pos++; // Skip closing parenthesis
+        break;
+      } else {
+        pos++;
+      }
+    }
+    return args;
+  }
+
+  while (pos < content.length) {
+    skipWhitespace();
+    if (pos >= content.length) break;
+
+    // Read function name
+    let name = "";
+    while (pos < content.length && /[a-zA-Z0-9_]/.test(content[pos])) {
+      name += content[pos];
+      pos++;
+    }
+
+    if (!name) {
+      pos++;
       continue;
     }
 
-    // type_text
-    match = trimmed.match(/^type_text\(['"](.+)['"]\s*,\s*['"](.*)['"]\)$/);
-    if (match) {
-      actions.push({ type: 'type_text', selector: match[1], text: match[2] });
-      continue;
-    }
-
-    // click_element
-    match = trimmed.match(/^click_element\(['"](.+)['"]\)$/);
-    if (match) {
-      actions.push({ type: 'click_element', selector: match[1] });
-      continue;
-    }
-
-    // press_key
-    match = trimmed.match(/^press_key\(['"](.+)['"]\)$/);
-    if (match) {
-      actions.push({ type: 'press_key', key: match[1] });
-      continue;
-    }
-
-    // scroll_down
-    if (trimmed.startsWith('scroll_down(')) {
-      actions.push({ type: 'scroll_down' });
-      continue;
-    }
-
-    // go_back
-    if (trimmed.startsWith('go_back(')) {
-      actions.push({ type: 'go_back' });
-      continue;
-    }
-
-    // finish
-    match = trimmed.match(/^finish\(['"](.+)['"]\)$/);
-    if (match) {
-      actions.push({ type: 'finish', message: match[1] });
-      continue;
+    skipWhitespace();
+    if (content[pos] === '(') {
+      const args = readArguments();
+      
+      if (name === 'open_website' && args.length >= 1) {
+        actions.push({ type: 'open_website', url: args[0] });
+      } else if (name === 'type_text' && args.length >= 2) {
+        actions.push({ type: 'type_text', selector: args[0], text: args[1] });
+      } else if (name === 'click_element' && args.length >= 1) {
+        actions.push({ type: 'click_element', selector: args[0] });
+      } else if (name === 'press_key' && args.length >= 1) {
+        actions.push({ type: 'press_key', key: args[0] });
+      } else if (name === 'scroll_down') {
+        actions.push({ type: 'scroll_down' });
+      } else if (name === 'go_back') {
+        actions.push({ type: 'go_back' });
+      } else if (name === 'finish' && args.length >= 1) {
+        actions.push({ type: 'finish', message: args[0] });
+      }
     }
   }
 
