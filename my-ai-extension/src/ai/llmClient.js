@@ -67,7 +67,7 @@ Next Action(s):`;
   };
 
   const body = {
-    model: model || "openrouter/free",
+    model: model || "groq/compound",
     messages: [
       {
         role: "user",

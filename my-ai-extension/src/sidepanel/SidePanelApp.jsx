@@ -3,7 +3,7 @@ import { getStorageData, setStorageData } from '../utils/storage';
 
 export default function SidePanelApp() {
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('openrouter/free');
+  const [model, setModel] = useState('groq/compound');
   const [goal, setGoal] = useState('');
   const [maxSteps, setMaxSteps] = useState(10);
   const [running, setRunning] = useState(false);
