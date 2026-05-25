@@ -77,6 +77,7 @@ model_name = st.sidebar.text_input(
     value=os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
 )
 max_steps = st.sidebar.slider("Max Steps", min_value=1, max_value=15, value=10)
+show_browser = st.sidebar.checkbox("Show Browser Window on Desktop", value=True)
 
 # Input Form
 st.markdown("### 🎯 Set Your Goal")
@@ -84,6 +85,8 @@ goal = st.text_input(
     "What do you want me to do?",
     placeholder="e.g. Open wikipedia.org, search for python programming language, and finish by telling me the first sentence."
 )
+
+st.markdown("---")
 
 start_button = st.button("🚀 Start Agent")
 
@@ -96,6 +99,7 @@ if start_button:
         # Override the API key environment variable for this run
         os.environ["OPENROUTER_API_KEY"] = groq_key
         os.environ["OPENROUTER_MODEL"] = model_name
+        os.environ["PLAYWRIGHT_HEADLESS"] = "False" if show_browser else "True"
         
         # UI Columns
         col_logs, col_view = st.columns([1, 2.2])
