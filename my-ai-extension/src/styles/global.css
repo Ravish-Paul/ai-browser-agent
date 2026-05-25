@@ -1,23 +1,23 @@
-/* Custom premium theme for AI Browser Extension */
+/* Premium theme matching the AutoPilot AI design */
 
 :root {
-  --bg-primary: #08090d;
-  --bg-secondary: #11131c;
-  --bg-glass: rgba(17, 19, 28, 0.7);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glass-focus: rgba(99, 102, 241, 0.4);
+  --bg-primary: #0a0b0e;
+  --bg-secondary: #121318;
+  --bg-glass: rgba(18, 19, 24, 0.85);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-glass-focus: rgba(108, 99, 255, 0.4);
   
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
   
-  --accent-primary: #6366f1;
-  --accent-secondary: #ec4899;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-  --accent-glowing: 0 0 15px rgba(99, 102, 241, 0.4);
+  --accent-primary: #6c63ff;
+  --accent-secondary: #00c9a7;
+  --accent-gradient: linear-gradient(135deg, #6c63ff 0%, #00c9a7 100%);
+  --accent-glowing: 0 0 15px rgba(108, 99, 255, 0.35);
   
-  --success: #10b981;
-  --error: #ef4444;
+  --success: #00c9a7;
+  --error: #e24b4a;
   --warning: #f59e0b;
 }
 
@@ -31,7 +31,7 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13.5px;
   overflow-x: hidden;
   height: 100vh;
 }
@@ -39,51 +39,46 @@ body {
 h1, h2, h3 {
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
 }
 
-/* Glowing text */
-.glow-text {
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
-}
-
-/* Glass card styling */
+/* Glass Card */
 .glass-card {
   background: var(--bg-glass);
   border: 1px solid var(--border-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 12px;
 }
 
-/* Form input elements */
+/* Inputs */
 .input-field {
   width: 100%;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-glass);
   border-radius: 8px;
   color: var(--text-primary);
-  font-size: 13.5px;
+  font-size: 13px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -91,33 +86,34 @@ h1, h2, h3 {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: var(--accent-glowing);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* Premium gradient button */
+/* Run Button */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
-  background: var(--accent-gradient);
+  padding: 11px 20px;
+  background: var(--accent-primary);
   color: white;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25);
+  gap: 6px;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
+  background: #5a52e0;
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.4);
 }
 
 .btn-primary:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 
 .btn-primary:disabled {
@@ -132,26 +128,26 @@ h1, h2, h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-glass);
   color: var(--text-primary);
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border-color: var(--text-secondary);
 }
 
 .btn-secondary.active {
-  background: rgba(99, 102, 241, 0.25) !important;
+  background: rgba(108, 99, 255, 0.15) !important;
   border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.15);
   color: white;
 }
 
@@ -159,13 +155,13 @@ h1, h2, h3 {
 .terminal-box {
   background-color: #0b0c11;
   font-family: 'Fira Code', monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: #a9b7c6;
   border: 1px solid var(--border-glass);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   overflow-y: auto;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* Indicator status light */
@@ -174,7 +170,6 @@ h1, h2, h3 {
   height: 8px;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 6px;
 }
 
 .status-indicator.active {
@@ -190,4 +185,58 @@ h1, h2, h3 {
 @keyframes pulse {
   0% { opacity: 0.6; }
   100% { opacity: 1; }
+}
+
+/* Toggle Switch Styling */
+.toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider-sw {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-glass);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.slider-sw:before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch input:checked + .slider-sw {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.toggle-switch input:checked + .slider-sw:before {
+  transform: translateX(16px);
+}
+
+/* Spinner Animation */
+.running-anim {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
