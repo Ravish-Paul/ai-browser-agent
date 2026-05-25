@@ -2,7 +2,7 @@
  * OpenRouter LLM Client
  */
 
-export async function getLLMPlan({ apiKey, model, userGoal, history, currentUrl, pageTitle, elements, screenshotUrl }) {
+export async function getLLMPlan({ apiKey, model, userGoal, history, currentUrl, pageTitle, elements }) {
   // Format elements list
   let elementsStr = elements && elements.length > 0 
     ? "\nInteractive Elements on Current Page:\n" + elements.map(el => `- Selector: ${el.selector}  --> Description: ${el.description}`).join('\n')
@@ -66,28 +66,12 @@ Next Action(s):`;
     "Authorization": `Bearer ${apiKey}`
   };
 
-  const promptContent = [
-    {
-      type: "text",
-      text: systemPrompt
-    }
-  ];
-
-  if (screenshotUrl) {
-    promptContent.push({
-      type: "image_url",
-      image_url: {
-        url: screenshotUrl
-      }
-    });
-  }
-
   const body = {
-    model: model || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    model: model || "openrouter/free",
     messages: [
       {
         role: "user",
-        content: promptContent
+        content: systemPrompt
       }
     ],
     temperature: 0.1,

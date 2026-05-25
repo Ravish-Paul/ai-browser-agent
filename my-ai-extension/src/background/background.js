@@ -269,8 +269,7 @@ async function runAgentLoop() {
         history: agentState.history,
         currentUrl,
         pageTitle,
-        elements,
-        screenshotUrl
+        elements
       });
       logToUI(`AI Plan:\n${plannedCode}`);
     } catch (err) {
