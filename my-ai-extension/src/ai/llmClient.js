@@ -82,7 +82,7 @@ Next Action(s):`;
     }
   } else if (apiKey && apiKey.startsWith("AIzaSy")) {
     if (!selectedModel || selectedModel.includes("openrouter") || selectedModel.includes("groq") || selectedModel === "openrouter/free" || selectedModel === "groq/compound") {
-      selectedModel = "gemini-1.5-flash"; // Highly compatible, fast free-tier Gemini model
+      selectedModel = "gemini-2.5-flash"; // Use fast gemini-2.5-flash by default
     }
   } else {
     if (!selectedModel || selectedModel === "groq/compound" || selectedModel.includes("gemini")) {
