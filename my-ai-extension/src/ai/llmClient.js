@@ -74,13 +74,17 @@ Next Action(s):`;
         content: systemPrompt
       }
     ],
-    temperature: 0.1,
-    extra_body: {
+    temperature: 0.1
+  };
+
+  // Only pass reasoning configuration for models that explicitly support it
+  if (body.model.includes('reasoning') || body.model.includes('nemotron')) {
+    body.extra_body = {
       reasoning: {
         enabled: true
       }
-    }
-  };
+    };
+  }
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
