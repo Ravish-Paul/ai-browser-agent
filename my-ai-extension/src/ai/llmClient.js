@@ -66,20 +66,26 @@ Next Action(s):`;
     "Authorization": `Bearer ${apiKey}`
   };
 
-  // Auto-detect Groq API Key and route directly to Groq's official API endpoint
+  // Auto-detect API Key types and route directly to the correct endpoint
   let apiEndpoint = "https://openrouter.ai/api/v1/chat/completions";
   if (apiKey && apiKey.startsWith("gsk_")) {
     apiEndpoint = "https://api.groq.com/openai/v1/chat/completions";
+  } else if (apiKey && apiKey.startsWith("AIzaSy")) {
+    apiEndpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
   }
 
   // Smart model fallback based on API key type
   let selectedModel = model || "";
   if (apiKey && apiKey.startsWith("gsk_")) {
-    if (!selectedModel || selectedModel.includes("openrouter") || selectedModel === "openrouter/free") {
+    if (!selectedModel || selectedModel.includes("openrouter") || selectedModel === "openrouter/free" || selectedModel.includes("gemini")) {
       selectedModel = "groq/compound";
     }
+  } else if (apiKey && apiKey.startsWith("AIzaSy")) {
+    if (!selectedModel || selectedModel.includes("openrouter") || selectedModel.includes("groq") || selectedModel === "openrouter/free" || selectedModel === "groq/compound") {
+      selectedModel = "gemini-1.5-flash"; // Highly compatible, fast free-tier Gemini model
+    }
   } else {
-    if (!selectedModel || selectedModel === "groq/compound") {
+    if (!selectedModel || selectedModel === "groq/compound" || selectedModel.includes("gemini")) {
       selectedModel = "openrouter/free";
     }
   }
@@ -96,7 +102,7 @@ Next Action(s):`;
   };
 
   // If using groq/compound on Groq's official API, attach compound_custom tool configurations
-  if (apiKey.startsWith("gsk_") && body.model === "groq/compound") {
+  if (apiKey && apiKey.startsWith("gsk_") && body.model === "groq/compound") {
     body.compound_custom = {
       tools: {
         enabled_tools: [
@@ -109,7 +115,8 @@ Next Action(s):`;
   }
 
   // Only pass reasoning configuration for OpenRouter models that explicitly support it
-  if (!apiKey.startsWith("gsk_") && (body.model.includes('reasoning') || body.model.includes('nemotron'))) {
+  const isDirectProvider = apiKey && (apiKey.startsWith("gsk_") || apiKey.startsWith("AIzaSy"));
+  if (!isDirectProvider && (body.model.includes('reasoning') || body.model.includes('nemotron'))) {
     body.extra_body = {
       reasoning: {
         enabled: true
