@@ -19,7 +19,7 @@ class AIBrain:
 
             base_url="https://openrouter.ai/api/v1"
         )
-        self.model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+        self.model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
 
     # -----------------------------------
     # CLEAN RESPONSE

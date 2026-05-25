@@ -74,7 +74,7 @@ groq_key = st.sidebar.text_input(
 )
 model_name = st.sidebar.text_input(
     "OpenRouter Model",
-    value=os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+    value=os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
 )
 max_steps = st.sidebar.slider("Max Steps", min_value=1, max_value=15, value=10)
 
@@ -98,7 +98,7 @@ if start_button:
         os.environ["OPENROUTER_MODEL"] = model_name
         
         # UI Columns
-        col_logs, col_view = st.columns([1, 1.2])
+        col_logs, col_view = st.columns([1, 2.2])
         
         with col_logs:
             st.markdown("### 📜 Execution Logs")
@@ -125,7 +125,13 @@ if start_button:
         
         # Main execution loop
         try:
-            agent = BrowserTools()
+            def update_ui_screenshot(img_path):
+                try:
+                    image_placeholder.image(img_path, caption="Live Browser Viewport (12 FPS)", width='stretch')
+                except Exception:
+                    pass
+
+            agent = BrowserTools(screenshot_callback=update_ui_screenshot)
             brain = AIBrain()
             
             # Update API key in brain client if overridden

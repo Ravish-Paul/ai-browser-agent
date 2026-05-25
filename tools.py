@@ -3,12 +3,13 @@ from playwright.sync_api import sync_playwright
 
 class BrowserTools:
 
-    def __init__(self):
+    def __init__(self, screenshot_callback=None):
 
         import os
         import tempfile
         import uuid
 
+        self.screenshot_callback = screenshot_callback
         profile_dir = os.path.join(tempfile.gettempdir(), f"playwright_profile_{uuid.uuid4().hex}")
 
         self.playwright = sync_playwright().start()
@@ -33,6 +34,22 @@ class BrowserTools:
 
         self.page = self.browser.pages[0]
 
+    def wait_and_stream(self, ms):
+        if not self.screenshot_callback:
+            self.page.wait_for_timeout(ms)
+            return
+
+        frame_time = 83  # ms (approx 12 FPS)
+        elapsed = 0
+        while elapsed < ms:
+            self.page.wait_for_timeout(frame_time)
+            elapsed += frame_time
+            try:
+                self.page.screenshot(path="live_screen.png", type="png")
+                self.screenshot_callback("live_screen.png")
+            except Exception:
+                pass
+
     # -----------------------------------
     # OPEN WEBSITE
     # -----------------------------------
@@ -45,7 +62,7 @@ class BrowserTools:
             "domcontentloaded"
         )
 
-        self.page.wait_for_timeout(3000)
+        self.wait_and_stream(3000)
 
         print(f"\nOpened Website: {url}")
 
@@ -61,6 +78,7 @@ class BrowserTools:
         )
 
         self.page.fill(selector, text, timeout=5000)
+        self.wait_and_stream(1000)
 
         print(f"\nTyped: {text}")
 
@@ -72,7 +90,7 @@ class BrowserTools:
 
         self.page.keyboard.press(key)
 
-        self.page.wait_for_timeout(3000)
+        self.wait_and_stream(3000)
 
         print(f"\nPressed Key: {key}")
 
@@ -92,7 +110,7 @@ class BrowserTools:
         except Exception:
             self.page.locator(selector).first.click(force=True, timeout=3000)
 
-        self.page.wait_for_timeout(3000)
+        self.wait_and_stream(3000)
 
         print(f"\nClicked: {selector}")
 
@@ -104,7 +122,7 @@ class BrowserTools:
 
         self.page.mouse.wheel(0, 3000)
 
-        self.page.wait_for_timeout(2000)
+        self.wait_and_stream(2000)
 
         print("\nScrolled Down")
 
@@ -120,7 +138,7 @@ class BrowserTools:
             "domcontentloaded"
         )
 
-        self.page.wait_for_timeout(3000)
+        self.wait_and_stream(3000)
 
         print("\nNavigated Back")
 
