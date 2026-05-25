@@ -83,6 +83,19 @@ Next Action(s):`;
     temperature: 0.1
   };
 
+  // If using groq/compound on Groq's official API, attach compound_custom tool configurations
+  if (apiKey.startsWith("gsk_") && body.model === "groq/compound") {
+    body.compound_custom = {
+      tools: {
+        enabled_tools: [
+          "web_search",
+          "code_interpreter",
+          "visit_website"
+        ]
+      }
+    };
+  }
+
   // Only pass reasoning configuration for OpenRouter models that explicitly support it
   if (!apiKey.startsWith("gsk_") && (body.model.includes('reasoning') || body.model.includes('nemotron'))) {
     body.extra_body = {
