@@ -39,14 +39,17 @@ class BrowserTools:
             self.page.wait_for_timeout(ms)
             return
 
-        frame_time = 83  # ms (approx 12 FPS)
-        elapsed = 0
-        while elapsed < ms:
-            self.page.wait_for_timeout(frame_time)
-            elapsed += frame_time
+        import time
+        start_time = time.time()
+        target_seconds = ms / 1000.0
+
+        while (time.time() - start_time) < target_seconds:
+            # Wait a tiny bit (40ms) to allow transitions/animations
+            self.page.wait_for_timeout(40)
             try:
-                self.page.screenshot(path="live_screen.png", type="png")
-                self.screenshot_callback("live_screen.png")
+                # Use highly compressed JPEG for fast capture and write (saves significant CPU time)
+                self.page.screenshot(path="live_screen.jpg", type="jpeg", quality=45)
+                self.screenshot_callback("live_screen.jpg")
             except Exception:
                 pass
 
