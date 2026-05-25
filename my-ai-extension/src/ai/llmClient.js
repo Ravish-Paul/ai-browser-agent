@@ -72,8 +72,20 @@ Next Action(s):`;
     apiEndpoint = "https://api.groq.com/openai/v1/chat/completions";
   }
 
+  // Smart model fallback based on API key type
+  let selectedModel = model || "";
+  if (apiKey && apiKey.startsWith("gsk_")) {
+    if (!selectedModel || selectedModel.includes("openrouter") || selectedModel === "openrouter/free") {
+      selectedModel = "groq/compound";
+    }
+  } else {
+    if (!selectedModel || selectedModel === "groq/compound") {
+      selectedModel = "openrouter/free";
+    }
+  }
+
   const body = {
-    model: model || "groq/compound",
+    model: selectedModel,
     messages: [
       {
         role: "user",
