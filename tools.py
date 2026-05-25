@@ -87,9 +87,10 @@ class BrowserTools:
             timeout=5000
         )
 
-        self.page.locator(
-            selector
-        ).first.click(timeout=5000)
+        try:
+            self.page.locator(selector).first.click(timeout=3000)
+        except Exception:
+            self.page.locator(selector).first.click(force=True, timeout=3000)
 
         self.page.wait_for_timeout(3000)
 
@@ -209,8 +210,8 @@ class BrowserTools:
                     } else if ((tag === 'input' || tag === 'textarea') && name) {
                         selector = `${tag}[name="${name}"]`;
                     } else if (tag === 'a' && text) {
-                        const escapedText = text.replace(/"/g, '\\"').substring(0, 40);
-                        selector = `a:has-text("${escapedText}")`;
+                        const cleanedText = text.replace(/["']/g, '').substring(0, 45).trim();
+                        selector = `a:has-text("${cleanedText}")`;
                     } else if (id) {
                         if (tag === 'button') {
                             selector = `${tag}#${id}`;
@@ -224,8 +225,8 @@ class BrowserTools:
                     } else if (title) {
                         selector = `${tag}[title="${title.replace(/"/g, '\\"')}"]`;
                     } else if (tag === 'button' && text) {
-                        const escapedText = text.replace(/"/g, '\\"').substring(0, 40);
-                        selector = `button:has-text("${escapedText}")`;
+                        const cleanedText = text.replace(/["']/g, '').substring(0, 45).trim();
+                        selector = `button:has-text("${cleanedText}")`;
                     } else if (el.className) {
                         const firstClass = el.className.trim().split(/\\s+/)[0];
                         if (firstClass && !firstClass.includes(':')) {
