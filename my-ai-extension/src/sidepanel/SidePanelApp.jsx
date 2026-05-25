@@ -221,25 +221,28 @@ export default function SidePanelApp() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                OpenRouter API Key
+                API Key (OpenRouter, Groq, or Gemini)
               </label>
               <input
                 type="password"
                 className="input-field"
-                placeholder="sk-or-..."
+                placeholder="sk-or-... / gsk_... / AIzaSy..."
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
               />
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '3px', display: 'block' }}>
+                Endpoint auto-detected by key prefix.
+              </span>
             </div>
 
             <div>
               <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                LLM Model
+                LLM Model Name
               </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="nvidia/nemotron-..."
+                placeholder="gemini-2.5-flash / groq/compound / openrouter/free"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
               />
