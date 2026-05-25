@@ -104,18 +104,32 @@ export function typeText(selector, text) {
   if (!el) throw new Error(`Element not found: ${selector}`);
 
   highlightElement(el);
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  try {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) {}
   
   try {
     el.focus();
   } catch (e) {}
 
-  // Fill the value
-  el.value = text;
+  // Fill the value using native setter to bypass framework overrides (React, Vue, Polymer)
+  try {
+    const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+    const valueSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+    if (valueSetter) {
+      valueSetter.call(el, text);
+    } else {
+      el.value = text;
+    }
+  } catch (e) {
+    el.value = text;
+  }
 
   // Dispatch events to trigger bindings in React/Vue/Angular
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
+  try {
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  } catch (e) {}
 
   return `Typed "${text}" into: ${selector}`;
 }
