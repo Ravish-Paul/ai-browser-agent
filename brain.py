@@ -9,14 +9,17 @@ class AIBrain:
 
     def __init__(self):
 
-        api_key = os.getenv("GROQ_API_KEY", "")
+        api_key = os.getenv("OPENROUTER_API_KEY", "")
+        if not api_key:
+            api_key = os.getenv("GROQ_API_KEY", "")
 
         self.client = OpenAI(
 
             api_key=api_key,
 
-            base_url="https://api.groq.com/openai/v1"
+            base_url="https://openrouter.ai/api/v1"
         )
+        self.model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
 
     # -----------------------------------
     # CLEAN RESPONSE
@@ -115,7 +118,7 @@ Next Action(s):"""
 
         response = self.client.chat.completions.create(
 
-            model="llama-3.1-8b-instant",
+            model=self.model,
 
             messages=[
                 {
@@ -123,7 +126,8 @@ Next Action(s):"""
                     "content": prompt
                 }
             ],
-            temperature=0.1
+            temperature=0.1,
+            extra_body={"reasoning": {"enabled": True}}
         )
 
         raw_content = response.choices[0].message.content

@@ -68,9 +68,13 @@ st.markdown("Let AI explore and perform tasks in Chrome for you.")
 # Sidebar Configuration
 st.sidebar.title("Configuration ⚙️")
 groq_key = st.sidebar.text_input(
-    "Groq API Key",
-    value=os.getenv("GROQ_API_KEY", ""),
+    "OpenRouter API Key",
+    value=os.getenv("OPENROUTER_API_KEY", os.getenv("GROQ_API_KEY", "")),
     type="password"
+)
+model_name = st.sidebar.text_input(
+    "OpenRouter Model",
+    value=os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
 )
 max_steps = st.sidebar.slider("Max Steps", min_value=1, max_value=15, value=10)
 
@@ -87,10 +91,11 @@ if start_button:
     if not goal:
         st.warning("Please specify a goal!")
     elif not groq_key:
-        st.warning("Please specify a Groq API Key!")
+        st.warning("Please specify an OpenRouter API Key!")
     else:
         # Override the API key environment variable for this run
-        os.environ["GROQ_API_KEY"] = groq_key
+        os.environ["OPENROUTER_API_KEY"] = groq_key
+        os.environ["OPENROUTER_MODEL"] = model_name
         
         # UI Columns
         col_logs, col_view = st.columns([1, 1.2])
@@ -125,6 +130,7 @@ if start_button:
             
             # Update API key in brain client if overridden
             brain.client.api_key = groq_key
+            brain.model = model_name
             
             append_log("Browser and AI Brain initialized successfully!\n")
             
