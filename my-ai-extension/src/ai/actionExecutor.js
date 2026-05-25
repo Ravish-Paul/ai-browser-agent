@@ -67,22 +67,34 @@ export function clickElement(selector) {
   highlightElement(el);
 
   // Scroll into view
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  try {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) {}
 
-  // Focus and dispatch click events
+  // Focus the element
   try {
     el.focus();
   } catch (e) {}
 
+  // Dispatch mouse events to trigger framework listeners
   const mouseEvents = ['mousedown', 'mouseup', 'click'];
   mouseEvents.forEach(name => {
-    const event = new MouseEvent(name, {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    });
-    el.dispatchEvent(event);
+    try {
+      const event = new MouseEvent(name, {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      el.dispatchEvent(event);
+    } catch (e) {}
   });
+
+  // Call the native click() method to trigger native browser actions (like <a> links)
+  try {
+    if (typeof el.click === 'function') {
+      el.click();
+    }
+  } catch (e) {}
 
   return `Clicked: ${selector}`;
 }
@@ -124,9 +136,15 @@ export function pressKey(key) {
   el.dispatchEvent(new KeyboardEvent('keypress', eventInit));
   el.dispatchEvent(new KeyboardEvent('keyup', eventInit));
 
-  // If it's a form input and we press Enter, submit the form
+  // If it's a form input and we press Enter, submit the form with proper events
   if (key === 'Enter' && el.tagName === 'INPUT' && el.form) {
-    el.form.submit();
+    const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+    const defaultAllowed = el.form.dispatchEvent(submitEvent);
+    if (defaultAllowed) {
+      try {
+        el.form.submit();
+      } catch (e) {}
+    }
   }
 
   return `Pressed Key: ${key}`;

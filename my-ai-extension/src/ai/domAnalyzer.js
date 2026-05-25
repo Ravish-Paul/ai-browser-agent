@@ -36,6 +36,7 @@ export function getInteractiveElements(root = document) {
       const ariaLabel = el.getAttribute('aria-label') || '';
       const title = el.getAttribute('title') || '';
       const text = el.innerText ? el.innerText.trim().replace(/\n/g, ' ') : '';
+      const href = el.getAttribute('href') || '';
 
       // Ignore accessibility skip links
       const lowerText = text.toLowerCase();
@@ -43,17 +44,27 @@ export function getInteractiveElements(root = document) {
         continue;
       }
 
+      // Check if the ID is unique on the page
+      let isIdUnique = false;
+      if (id) {
+        try {
+          isIdUnique = root.querySelectorAll(`[id="${id}"]`).length === 1;
+        } catch (e) {}
+      }
+
       let selector = tag;
 
       // Prioritize unique or readable selectors
-      if ((tag === 'input' || tag === 'textarea') && id) {
+      if ((tag === 'input' || tag === 'textarea') && id && isIdUnique) {
         selector = `${tag}#${id}`;
       } else if ((tag === 'input' || tag === 'textarea') && name) {
         selector = `${tag}[name="${name}"]`;
       } else if (tag === 'a' && text) {
         const cleanedText = text.replace(/["']/g, '').substring(0, 45).trim();
         selector = `a:has-text("${cleanedText}")`;
-      } else if (id) {
+      } else if (tag === 'a' && href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+        selector = `a[href="${href.replace(/"/g, '\\"')}"]`;
+      } else if (id && isIdUnique) {
         if (tag === 'button') {
           selector = `${tag}#${id}`;
         } else {
