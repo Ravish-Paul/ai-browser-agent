@@ -1,5 +1,10 @@
 import { getLLMPlan } from '../ai/llmClient';
 
+// Open Side Panel on action click (V3 sidePanel API)
+if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
+}
+
 // Core Agent State
 let agentState = {
   running: false,

@@ -17,7 +17,7 @@
     "type": "module"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_title": "Open AutoPilot AI"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
