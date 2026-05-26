@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Browser Agent Extension",
+  "name": "AutoPilot AI",
   "version": "1.0.0",
   "description": "An autonomous AI browser agent running directly inside Chrome.",
   "permissions": [

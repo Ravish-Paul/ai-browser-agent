@@ -1,6 +1,6 @@
-# 🤖 Autonomous AI Browser Agent: AutoPilot
+# 🤖 AutoPilot AI: Autonomous Browser Agent
 
-AutoPilot is an advanced, high-performance autonomous AI browser automation agent running entirely client-side inside a Google Chrome Extension (**Manifest V3**). Built with Vite, React, and Vanilla CSS, it features a premium sidepanel UI that lets you specify high-level goals and watch the AI autonomously interact with pages in real-time.
+AutoPilot AI is an advanced, high-performance autonomous AI browser automation agent running entirely client-side inside a Google Chrome Extension (**Manifest V3**). Built with Vite, React, and Vanilla CSS, it features a premium sidepanel UI that lets you specify high-level goals (e.g. *"Play a song on YouTube"* or *"Search Wikipedia for python programming"*) and watch the AI autonomously interact with pages in real-time.
 
 ---
 
@@ -23,46 +23,64 @@ AutoPilot is an advanced, high-performance autonomous AI browser automation agen
 
 ---
 
-## 🛠️ Setup & Build Guide
+## 🛠️ Step-by-Step Installation Guide (Zero Node.js Setup Required)
 
-### 1. Build the Extension
-Ensure you have [Node.js](https://nodejs.org/) installed. Run these commands inside the `my-ai-extension` folder:
-```bash
-cd my-ai-extension
-npm install
-npm run build
-```
-This compiles the extension files and outputs them into the `dist/` directory.
+We have pre-compiled the extension and included the `dist/` directory inside the repository. This means anyone can download and install it in Chrome in under **1 minute** without needing Node.js or any build tools!
 
-### 2. Load into Google Chrome
-1. Open Google Chrome and go to `chrome://extensions/`.
-2. Turn **ON** **Developer mode** in the top-right corner.
-3. Click the **Load unpacked** button in the top-left corner.
-4. Select the `dist` folder located inside the `my-ai-extension` directory.
+### Option A: Install Pre-Compiled Build (Fastest - 1 Min)
+1. **Download / Clone Repository**:
+   * Click the green **Code** button at the top of this GitHub page and select **Download ZIP**, then extract it on your computer.
+   * Or run in terminal: `git clone https://github.com/Ravish-Paul/ai-browser-agent.git`
+2. **Open Extensions Page**:
+   * Open Google Chrome and type `chrome://extensions/` in the URL bar.
+3. **Enable Developer Mode**:
+   * Turn **ON** the **Developer mode** toggle in the top-right corner.
+4. **Load the Extension**:
+   * Click the **Load unpacked** button in the top-left corner.
+   * Select the `dist` folder located inside the `autopilot-ai/` directory of the extracted repository.
+5. **Start AutoPilot AI**:
+   * Open the Chrome Sidepanel or click the extension toolbar icon to launch the dashboard!
 
-### 3. Usage
-1. Click the **Extension icon** (or open the Sidepanel from the toolbar) to launch **AutoPilot AI**.
-2. Go to **Settings** (⚙️) and configure:
-   * **API Key**: Enter your Gemini, Groq, or OpenRouter API key.
-   * **Model**: Choose your model (e.g., `gemini-2.5-flash` or `openrouter/free`).
-3. Enter your task goal in the **Run** panel, click **⚡ Run Task**, and watch it go!
+---
+
+### Option B: Build from Source (Developers)
+If you wish to make changes and compile the extension from source:
+1. Make sure you have [Node.js](https://nodejs.org/) installed.
+2. Open terminal in the `autopilot-ai/` directory and run:
+   ```bash
+   cd autopilot-ai
+   npm install
+   npm run build
+   ```
+3. Follow the Chrome loading steps above, selecting the compiled `autopilot-ai/dist/` folder.
+
+---
+
+## ⚙️ How to Configure & Use
+
+1. Launch the **AutoPilot AI** sidepanel dashboard from Chrome's extensions toolbar.
+2. Go to the **Settings** (⚙️) tab:
+   * **API Key**: Paste your API key (supports Gemini `AIzaSy...`, Groq `gsk_...`, or OpenRouter `sk-or-...` keys).
+   * **LLM Model**: Enter the model name (defaults to `gemini-2.5-flash` for Gemini keys, or use `openrouter/free`).
+   * **Max Steps**: Set the step limits (e.g. 10 or 15 steps).
+3. Switch back to the **Run** tab, enter a goal (e.g. *"Open youtube.com, search for a lofi song, and play it"*), and click **⚡ Run Task**!
 
 ---
 
 ## 🏗️ Folder Structure
 
 ```
-├── my-ai-extension/         # Chrome Extension source code
-│   ├── dist/                # Production build output (Load this in Chrome)
-│   ├── public/              # Static assets & Manifest V3 configuration
+├── autopilot-ai/            # Main Chrome Extension source directory
+│   ├── dist/                # Pre-compiled production build (Load this in Chrome)
+│   ├── public/              # Icons, manifest.json, assets
 │   ├── src/
-│   │   ├── ai/              # DOM extraction, action execution, LLM client
-│   │   ├── background/      # Service worker managing state and loop transitions
-│   │   ├── content/         # Content script executing physical DOM events
-│   │   ├── sidepanel/       # React SidePanel frontend components
-│   │   └── styles/          # Dark theme styles & scrollbar themes
+│   │   ├── ai/              # DOM element parsing, LLM prompt templates, action executor
+│   │   ├── background/      # Background worker orchestrating state transitions & fetch retries
+│   │   ├── content/         # Page scripts to handle DOM click & type events
+│   │   ├── sidepanel/       # React components for the dashboard frontend
+│   │   └── styles/          # Neon HSL themes & custom scrollbar styles
 │   ├── package.json
-│   └── vite.config.js       # Vite configuration compiling assets
+│   └── vite.config.js       # Vite bundler options
 ```
 
 ---
@@ -83,10 +101,10 @@ graph TD
     I --> B
 ```
 
-1. **DOM Parsing**: The extension's content script scans the current webpage and extracts all interactive items (buttons, inputs, links) along with their visual coordinate references and descriptions.
-2. **Context Composition**: The background service worker packages this list of elements, the page screenshot, active URL, page title, and past actions list into a structured payload for the LLM.
-3. **Execution**: The LLM returns a sequence of clean browser functions (like `type_text`, `click_element`, `open_website`). The script executes these actions sequentially with robust timeouts.
-4. **Self-Correction**: If a selector fails to click, the error stack trace is sent back to the LLM during the next step, allowing it to adapt its strategy in real time.
+1. **DOM Parsing**: The content script scans the active tab's DOM structure and isolates interactive targets (buttons, inputs, links) along with their coordinate boxes.
+2. **Payload Compilation**: The background worker captures the viewport screenshot, packages it with page titles/selectors, and sends it to the LLM.
+3. **Execution**: The LLM output acts like python statements (e.g. `click_element()`) which are parsed into actions.
+4. **Error Handling**: If a target element is not found, the error stack trace is fed back to the LLM during the next step, allowing the agent to self-correct automatically.
 
 ---
 

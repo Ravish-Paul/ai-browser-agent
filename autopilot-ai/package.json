@@ -1,5 +1,5 @@
 {
-  "name": "my-ai-extension",
+  "name": "autopilot-ai",
   "version": "1.0.0",
   "description": "Autonomous AI Browser Agent Chrome Extension",
   "main": "index.js",
