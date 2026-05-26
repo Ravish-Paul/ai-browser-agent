@@ -205,13 +205,24 @@ function parseActions(codeBlock) {
   return actions;
 }
 
-// Wait for tab load status to be complete
+// Wait for tab load status to be complete (with a 10-second safety timeout)
 function waitForTabLoad(tabId) {
   return new Promise((resolve) => {
+    let resolved = false;
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        chrome.tabs.onUpdated.removeListener(listener);
+        resolve();
+      }
+    }, 10000); // 10s safety timeout
+
     const listener = (updatedTabId, changeInfo) => {
       if (updatedTabId === tabId && changeInfo.status === 'complete') {
+        resolved = true;
+        clearTimeout(timeout);
         chrome.tabs.onUpdated.removeListener(listener);
-        setTimeout(resolve, 2000); // Allow extra time for AJAX/DOM settle
+        setTimeout(resolve, 300); // Allow extra time for AJAX/DOM settle
       }
     };
     chrome.tabs.onUpdated.addListener(listener);
@@ -269,11 +280,16 @@ async function runAgentLoop() {
         history: agentState.history,
         currentUrl,
         pageTitle,
-        elements
+        elements,
+        onLog: logToUI
       });
       logToUI(`AI Plan:\n${plannedCode}`);
     } catch (err) {
-      logToUI(`AI Think Error: ${err.message}`);
+      if (err.message.includes('429') || err.message.toLowerCase().includes('rate limit')) {
+        logToUI(`⏳ Rate limit hit — sab retries exhaust ho gaye. Thodi der baad dubara try karo ya model badlo.`);
+      } else {
+        logToUI(`AI Think Error: ${err.message}`);
+      }
       agentState.running = false;
       break;
     }
@@ -321,7 +337,7 @@ async function runAgentLoop() {
         
         // Add to history
         agentState.history.push(JSON.stringify(act));
-        await new Promise(r => setTimeout(r, 1500)); // Delay between action steps
+        await new Promise(r => setTimeout(r, 100)); // Delay between action steps
       } catch (err) {
         logToUI(`Execution Error: ${err.message}`);
         agentState.errorMsg = err.message;
@@ -335,7 +351,7 @@ async function runAgentLoop() {
     }
 
     // Settle delay between steps
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 100));
   }
 
   if (agentState.currentStep >= agentState.maxSteps && agentState.running) {

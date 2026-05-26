@@ -2,7 +2,7 @@
  * OpenRouter LLM Client
  */
 
-export async function getLLMPlan({ apiKey, model, userGoal, history, currentUrl, pageTitle, elements }) {
+export async function getLLMPlan({ apiKey, model, userGoal, history, currentUrl, pageTitle, elements, onLog }) {
   // Format elements list
   let elementsStr = elements && elements.length > 0 
     ? "\nInteractive Elements on Current Page:\n" + elements.map(el => `- Selector: ${el.selector}  --> Description: ${el.description}`).join('\n')
@@ -82,7 +82,7 @@ Next Action(s):`;
     }
   } else if (apiKey && apiKey.startsWith("AIzaSy")) {
     if (!selectedModel || selectedModel.includes("openrouter") || selectedModel.includes("groq") || selectedModel === "openrouter/free" || selectedModel === "groq/compound") {
-      selectedModel = "gemini-2.5-flash"; // Use fast gemini-2.5-flash by default
+      selectedModel = "gemini-2.5-flash"; // User's preferred model
     }
   } else {
     if (!selectedModel || selectedModel === "groq/compound" || selectedModel.includes("gemini")) {
@@ -124,21 +124,65 @@ Next Action(s):`;
     };
   }
 
-  const response = await fetch(apiEndpoint, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body)
-  });
+  // ── Fetch with exponential backoff retry (handles 429 Rate Limit and connection errors) ──────
+  const MAX_RETRIES = 4;
+  let lastError;
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData?.error?.message || `HTTP error ${response.status}`);
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    if (onLog && typeof onLog === 'function') {
+      onLog(`Calling LLM API (Attempt ${attempt + 1}/${MAX_RETRIES})...`);
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout per attempt
+
+    let response;
+    try {
+      response = await fetch(apiEndpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      const isTimeout = err.name === 'AbortError';
+      const errMsg = isTimeout ? "Request timed out after 20s" : err.message;
+      console.warn(`[LLMClient] Fetch error: ${errMsg}`);
+      if (onLog && typeof onLog === 'function') {
+        onLog(`⚠️ Connection error: ${errMsg}. Retrying...`);
+      }
+      lastError = new Error(errMsg);
+      await new Promise(r => setTimeout(r, 2000));
+      continue;
+    }
+
+    if (response.status === 429) {
+      // Rate limited — wait with exponential backoff before retrying
+      const waitMs = Math.pow(2, attempt) * 3000; // 3s, 6s, 12s, 24s
+      console.warn(`[LLMClient] Rate limited (429). Retrying in ${waitMs / 1000}s… (attempt ${attempt + 1}/${MAX_RETRIES})`);
+      if (onLog && typeof onLog === 'function') {
+        onLog(`⏳ Rate limited (429). Retrying in ${waitMs / 1000}s...`);
+      }
+      await new Promise(r => setTimeout(r, waitMs));
+      lastError = new Error(`Rate limit exceeded (429). Retried ${attempt + 1} times.`);
+      continue;
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.error?.message || `HTTP error ${response.status}`);
+    }
+
+    const data = await response.json();
+    let code = data.choices[0]?.message?.content || "";
+
+    // Clean code wrappers
+    code = code.replace(/```(?:python)?/g, '').replace(/```/g, '').trim();
+    return code;
   }
 
-  const data = await response.json();
-  let code = data.choices[0]?.message?.content || "";
-
-  // Clean code wrappers
-  code = code.replace(/```(?:python)?/g, '').replace(/```/g, '').trim();
-  return code;
+  // All retries exhausted
+  throw lastError || new Error("LLM request failed after all retries.");
 }
