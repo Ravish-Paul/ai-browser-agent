@@ -1,26 +1,18 @@
 # 🤖 Autonomous AI Browser Agent: AutoPilot
 
-AutoPilot is an advanced, high-performance autonomous AI browser automation agent project that comes in **two formats**: 
-1. **Chrome Extension (Manifest V3)**: Built with Vite, React, and Vanilla CSS, running entirely client-side inside a Chrome sidepanel.
-2. **Python Desktop Agent**: Built with Playwright and Streamlit, featuring a CLI and web interface.
-
-Both versions allow you to specify high-level goals (e.g., *"Play a song on YouTube"* or *"Search Wikipedia for python programming"*) and watch the AI autonomously interact with the page step-by-step.
+AutoPilot is an advanced, high-performance autonomous AI browser automation agent running entirely client-side inside a Google Chrome Extension (**Manifest V3**). Built with Vite, React, and Vanilla CSS, it features a premium sidepanel UI that lets you specify high-level goals and watch the AI autonomously interact with pages in real-time.
 
 ---
 
 <p align="center">
   <img src="https://img.shields.io/badge/Chrome_Extension-Manifest_V3-4285F4?logo=googlechrome&logoColor=white&style=for-the-badge" alt="Chrome Extension" />
   <img src="https://img.shields.io/badge/React-Vite-646CFF?logo=react&logoColor=white&style=for-the-badge" alt="React Vite" />
-  <img src="https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white&style=for-the-badge" alt="Python Version" />
-  <img src="https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white&style=for-the-badge" alt="Streamlit App" />
   <img src="https://img.shields.io/badge/LLM_Engine-Gemini_&_Groq-00C9A7?logo=googlegemini&logoColor=white&style=for-the-badge" alt="LLM Engine" />
 </p>
 
 ---
 
-## ⚡ Main Core Features (Chrome Extension)
-
-Our React-based Chrome Extension is engineered for speed, reliability, and modern looks:
+## ⚡ Key Features
 
 * **📺 Live Tab Viewport Mirroring (11-12 FPS)**: Watch a real-time, scaled screenshot viewport of the active tab right inside your sidepanel workspace (Small, Medium, Large sizes).
 * **⚡ Ultra-Fast Loop (0s Delay)**: Artificial rate-limit delays have been removed. Action steps resolve in under **100ms** to ensure the fastest execution speed.
@@ -31,7 +23,7 @@ Our React-based Chrome Extension is engineered for speed, reliability, and moder
 
 ---
 
-## 🛠️ Chrome Extension: Build & Setup Guide
+## 🛠️ Setup & Build Guide
 
 ### 1. Build the Extension
 Ensure you have [Node.js](https://nodejs.org/) installed. Run these commands inside the `my-ai-extension` folder:
@@ -57,46 +49,6 @@ This compiles the extension files and outputs them into the `dist/` directory.
 
 ---
 
-## 🐍 Python & Streamlit Desktop Setup Guide
-
-The Python desktop agent launches a fully automated Chromium instance on your desktop.
-
-### 1. Install Python Dependencies
-Run the following commands in the project root:
-```bash
-# Set up virtual environment
-python -m venv .venv
-# Activate virtual env
-# On Windows:
-.\.venv\Scripts\Activate.ps1
-# On macOS/Linux:
-source .venv/bin/activate
-
-# Install requirements
-pip install -r requirements.txt
-playwright install chromium
-```
-
-### 2. Setup API Key
-Create a `.env` file in the root directory:
-```env
-OPENROUTER_API_KEY=your_openrouter_api_key_here
-```
-
-### 3. Run the Desktop Agent
-You can run it in command line or start the beautiful UI:
-
-* **Command Line Interface (CLI)**:
-  ```bash
-  python agent_loop.py
-  ```
-* **Web UI (Streamlit Dashboard)**:
-  ```bash
-  streamlit run app.py
-  ```
-
----
-
 ## 🏗️ Folder Structure
 
 ```
@@ -111,11 +63,6 @@ You can run it in command line or start the beautiful UI:
 │   │   └── styles/          # Dark theme styles & scrollbar themes
 │   ├── package.json
 │   └── vite.config.js       # Vite configuration compiling assets
-│
-├── agent_loop.py            # Python CLI automation loop
-├── app.py                   # Streamlit web dashboard
-├── tools.py                 # Playwright browser manipulation tools
-└── brain.py                 # LLM planning node for Python
 ```
 
 ---
